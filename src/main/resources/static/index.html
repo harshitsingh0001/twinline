@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Signup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<h1>Login / Signup</h1>
+<div class="form-container">
+    <h3 id="form-title">Sign Up</h3>
+    <input type="text" id="mobile" placeholder="Mobile Number" required><br><br>
+    <input type="password" id="password" placeholder="Password" required><br><br>
+    <button onclick="handleSubmit()">Submit</button>
+</div>
+
+<div class="form-container">
+    <button onclick="toggleForm()">Switch to Login / Signup</button>
+</div>
+
+<script>
+    const apiUrl = 'http://localhost:8080/api';
+
+    // Switch between Signup and Login
+    function toggleForm() {
+        const title = document.getElementById('form-title');
+        const mobile = document.getElementById('mobile');
+        const password = document.getElementById('password');
+
+        if (title.textContent === "Sign Up") {
+            title.textContent = "Login";
+            mobile.disabled = false;
+            password.disabled = false;
+        } else {
+            title.textContent = "Sign Up";
+            mobile.disabled = false;
+            password.disabled = false;
+        }
+    }
+
+    // Handle the form submission for signup/login
+    function handleSubmit() {
+        const mobile = document.getElementById('mobile').value;
+        const password = document.getElementById('password').value;
+        const formTitle = document.getElementById('form-title').textContent;
+
+        if (formTitle === "Sign Up") {
+            signup(mobile, password);
+        } else {
+            login(mobile, password);
+        }
+    }
+
+    // Signup function
+    function signup(mobile, password) {
+        fetch(`${apiUrl}/signup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ mobileNumber: mobile, password: password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                alert("Signup successful!");
+                localStorage.setItem('userId', data.data.id);  // Store userId for future use
+                window.location.href = "home.html";  // Redirect to home page
+            } else {
+                alert(data.statusMessage);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Login function
+    function login(mobile, password) {
+        fetch(`${apiUrl}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ mobileNumber: mobile, password: password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                alert("Login successful!");
+                localStorage.setItem('userId', data.data.id);  // Store userId for future use
+                window.location.href = "home.html";  // Redirect to home page
+            } else {
+                alert(data.statusMessage);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+</body>
+</html>

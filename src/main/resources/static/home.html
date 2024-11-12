@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Operations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        input {
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 100%;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            background-color: rgba(0, 0, 0, 0.4); /* Black background with transparency */
+            padding-top: 60px; /* Location of the modal */
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Width of the modal */
+        }
+
+        #responseTextArea {
+            width: 100%;
+            height: 200px;
+            font-family: 'Courier New', Courier, monospace;
+            margin-top: 10px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<h1>Blog Operations</h1>
+<div class="form-container">
+    <h3>Create Blog</h3>
+    <input type="text" id="createBlogData" placeholder="Blog Data" required><br><br>
+    <button onclick="createBlog()">Create Blog</button>
+</div>
+
+<div class="form-container">
+    <h3>Edit Blog</h3>
+    <input type="text" id="editBlogId" placeholder="Blog ID" required><br><br>
+    <input type="text" id="editBlogData" placeholder="New Blog Data" required><br><br>
+    <button onclick="editBlog()">Edit Blog</button>
+</div>
+
+<div class="form-container">
+    <h3>Delete Blog</h3>
+    <input type="text" id="deleteBlogId" placeholder="Blog ID" required><br><br>
+    <button onclick="deleteBlog()">Delete Blog</button>
+</div>
+
+<div class="form-container">
+    <h3>Get Top 5 Words from Blogs</h3>
+    <input type="text" id="repostUserId" placeholder="User ID" required><br><br>
+    <button onclick="getTopWords()">Get Top Words</button>
+</div>
+
+<!-- Modal for displaying response -->
+<div id="responseModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Response</h2>
+        <textarea id="responseTextArea" readonly></textarea>
+    </div>
+</div>
+
+<script>
+    const apiUrl = 'http://localhost:8080/api'; // Replace with your backend API URL
+    const userId = localStorage.getItem('userId');  // Get userId from local storage
+
+    // Handle blog creation
+    function createBlog() {
+        const blogData = document.getElementById('createBlogData').value;
+        fetch(`${apiUrl}/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId, blogData: blogData })
+        })
+        .then(response => response.json())
+        .then(data => showResponse(data))
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Handle blog editing
+    function editBlog() {
+        const blogId = document.getElementById('editBlogId').value;
+        const blogData = document.getElementById('editBlogData').value;
+        fetch(`${apiUrl}/edit`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ blogId: blogId, userId: userId, blogData: blogData })
+        })
+        .then(response => response.json())
+        .then(data => showResponse(data))
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Handle blog deletion
+    function deleteBlog() {
+        const blogId = document.getElementById('deleteBlogId').value;
+        fetch(`${apiUrl}/delete?blogId=${blogId}&userId=${userId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => showResponse(data))
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Handle repost (get top 5 words)
+    function getTopWords() {
+        const repostUserId = document.getElementById('repostUserId').value;
+        fetch(`${apiUrl}/report?userId=${repostUserId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => showResponse(data))
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Display response in a custom modal
+    function showResponse(data) {
+        const message = data.statusMessage || "No message available";
+        const details = JSON.stringify(data.data, null, 2) || "No additional data.";
+
+        // Set the content of the response textarea
+        const responseTextArea = document.getElementById('responseTextArea');
+        responseTextArea.value = `${message}\n\nDetails:\n${details}`;
+
+        // Display the modal
+        document.getElementById('responseModal').style.display = 'block';
+    }
+
+    // Close the modal
+    function closeModal() {
+        document.getElementById('responseModal').style.display = 'none';
+    }
+
+    // Close the modal if the user clicks outside the modal content
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('responseModal')) {
+            closeModal();
+        }
+    };
+</script>
+</body>
+</html>
